@@ -246,6 +246,9 @@ In the near-future the library will support:
 - H. Quaternion matrices and operations
 - H. Quaternion factorization and Norm rings
 - more primality-related features
+- C-based, and CUDA performance improvements for parallel operations
+- Qiskit integration for hypercomplex-quantum mechanics
+- Generalized operations on Clifford Algebras 
 
 
 ${\color{grey}\textsf{Copyright © 2024 HARP research, Inc. Visit us at }}$ [https://harpresearch.ai](https://harpresearch.ai)
