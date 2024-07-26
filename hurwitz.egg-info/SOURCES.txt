@@ -1,0 +1,9 @@
+LICENSE
+README.md
+setup.py
+hurwitz/__init__.py
+hurwitz/hurwitz.py
+hurwitz.egg-info/PKG-INFO
+hurwitz.egg-info/SOURCES.txt
+hurwitz.egg-info/dependency_links.txt
+hurwitz.egg-info/top_level.txt
