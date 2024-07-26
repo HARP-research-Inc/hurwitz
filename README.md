@@ -170,6 +170,7 @@ print(q9)  # Output: (2, -2 - 2i - 2j - 2k)
 q8 = q1 / q2  # True division
 print(q8)  # Output: (0.74, 0.037, 0.0, 0.074)
 ```
+Citation: For more on Euclidean division in the context of Hurwitz quaternions and to see the source of the algorithm used, see: [Boyd Coan and Cherng-tiao Perng, "Factorization of Hurwitz Quaternions," International Mathematical Forum, Vol. 7, 2012, no. 43, 2143 - 2156.](https://m-hikari.com/imf/imf-2012/41-44-2012/perngIMF41-44-2012.pdf)
 
 ### Decomposition
 
