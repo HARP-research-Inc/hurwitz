@@ -22,6 +22,7 @@ class HurwitzQuaternion:
         self.b = b
         self.c = c
         self.d = d
+        self.debug = False
         # ±1, ±i, ±j, ±k, 
         self.unitary_whole_quaternions = {
             (1, 0, 0, 0), (-1, 0, 0, 0), (0, 1, 0, 0), (0, -1, 0, 0),
@@ -190,11 +191,11 @@ class HurwitzQuaternion:
         conjugate = self.conjugate()
         values = conjugate.general
         norm = self.norm() ** 2
-        print("Conjugate:", repr(conjugate))
-        print("Conjugate Values:", values)
-        print("Norm:", norm)
+        print("Conjugate:", repr(conjugate)) if self.debug else None
+        print("Conjugate Values:", values) if self.debug else None
+        print("Norm:", norm) if self.debug else None
         ginv = tuple([val / norm for val in values])
-        print("General Inverse:",ginv )
+        print("General Inverse:",ginv ) if self.debug else None
         return ginv
 
     @staticmethod
@@ -214,13 +215,13 @@ class HurwitzQuaternion:
         if other.a == other.b == other.c == other.d == 0:
             raise ZeroDivisionError("Cannot divide by zero quaternion")
 
-        print("Attempting to divide a:", repr(self), "by b:", repr(other))
+        print("Attempting to divide a:", repr(self), "by b:", repr(other)) if self.debug else None
         # Calculate general inverse of the divisor b^-1
         binv = other.general_inverse()
-        print("Inverse of divisor: b^-1", binv)
+        print("Inverse of divisor: b^-1", binv) if self.debug else None
         # Calculate general product of the dividend and the divisor inverse: a*b^-1
         abinv = self.general_quaternion_multiplication(self.general, binv)
-        print("General product of dividend and inverse: ab^-1", abinv)
+        print("General product of dividend and inverse: ab^-1", abinv) if self.debug else None
         # Round the coefficients of the general product to the nearest integer, givning a number q which has 
         # coefficients which are 1/2 or less away from the coefficients of the general product
         # q : abs(n_i) ≤ 1/2 ∀ n_i ∈ n_1 + n_2*i + n_3*j + n_3*k = a*(b^-1) - q
@@ -229,37 +230,37 @@ class HurwitzQuaternion:
         q_half = [self.round_to_only_half(val) for val in abinv]
 
 
-        print("Int Rounded general product: q=", q_whole)
-        print("Half Rounded general product: q=", q_half)
+        print("Int Rounded general product: q=", q_whole) if self.debug else None
+        print("Half Rounded general product: q=", q_half) if self.debug else None
         qb_whole = self.general_quaternion_multiplication(other.general, q_whole)
         gb_whole_norm = self.general_norm([qb_whole[i] - self.general[i] for i in range(4)])
-        print(f"Product of divisor and whole rounded product: qb={qb_whole} with norm {gb_whole_norm}")
+        print(f"Product of divisor and whole rounded product: qb={qb_whole} with norm {gb_whole_norm}") if self.debug else None
         qb_half = self.general_quaternion_multiplication(other.general, q_half)
         gb_half_norm = self.general_norm([qb_half[i] - self.general[i] for i in range(4)])
-        print(f"Product of divisor and half rounded product: qb={qb_half} with norm {gb_half_norm}")
+        print(f"Product of divisor and half rounded product: qb={qb_half} with norm {gb_half_norm}") if self.debug else None
         delta_half = abs(self.norm() - gb_whole_norm)
         delta_whole = abs(self.norm() - gb_half_norm)
-        print("Delta Whole:", delta_whole)
-        print("Delta Half:", delta_half)
+        print("Delta Whole:", delta_whole) if self.debug else None
+        print("Delta Half:", delta_half) if self.debug else None
         if delta_half < delta_whole:
             q = q_half
         else:
             q = q_whole
 
-        print(f"Resultant formula: a = qb + r -> {repr(self)} = ({repr(other)})({q[0]} + {q[1]}i + {q[2]}j + {q[3]}ij) + r")
+        print(f"Resultant formula: a = qb + r -> {repr(self)} = ({repr(other)})({q[0]} + {q[1]}i + {q[2]}j + {q[3]}ij) + r") if self.debug else None
         # calculate qb
         qb = self.general_quaternion_multiplication(other.general, q)
-        print("Product of divisor and rounded product: qb=", qb)
+        print("Product of divisor and rounded product: qb=", qb) if self.debug else None
 
         # Calculate the error between the rounded product and the general product
         r = [self.general[i] - qb[i] for i in range(4)]
-        print("Difference between rounded product and general product: r = ", r)
+        print("Difference between rounded product and general product: r = ", r) if self.debug else None
         r_rounded_to_half = [self.round_to_nearest_half(val) for val in r]
         r_preprocess = [int(r_rounded_to_half[i]*2) for i in range(4)]
         q_rounded_to_half = [self.round_to_nearest_half(val) for val in q]   
         q_preprocess = [int(q_rounded_to_half[i]*2) for i in range(4)]
-        print("Rounded/doubled preprocesed r:", r_preprocess)
-        print("Rounded/doubled preprocesed q:", q_preprocess)
+        print("Rounded/doubled preprocesed r:", r_preprocess) if self.debug else None
+        print("Rounded/doubled preprocesed q:", q_preprocess) if self.debug else None
         return (HurwitzQuaternion(*q_preprocess, True), HurwitzQuaternion(*r_preprocess, True))
 
     def euclidean_division_pro_max(self, other: 'HurwitzQuaternion') -> ('HurwitzQuaternion', 'HurwitzQuaternion'):
@@ -268,13 +269,13 @@ class HurwitzQuaternion:
         forward = self.euclidean_division(other)
         backward = self.conjugate().euclidean_division(other)
         if forward[1].norm() > backward[1].norm():
-            print("Conjugate division has smaller remainder by ", forward[1].norm() - backward[1].norm())
+            print("Conjugate division has smaller remainder by ", forward[1].norm() - backward[1].norm()) if self.debug else None
             return backward
         elif forward[1].norm() < backward[1].norm():
-            print("Regular division has smaller remainder by ", backward[1].norm()- forward[1].norm())
+            print("Regular division has smaller remainder by ", backward[1].norm()- forward[1].norm()) if self.debug else None
             return forward
         else:
-            print("Remainders are equal, returning regular division")
+            print("Remainders are equal, returning regular division") if self.debug else None
             return forward
 
     def snap(self, general_quaternion: tuple) -> 'HurwitzQuaternion':
@@ -302,7 +303,7 @@ class HurwitzQuaternion:
 
     def decompose(self) -> list:
         q_b, r_b = self.euclidean_division(HurwitzQuaternion(1, 1, 1, 1, True))
-        print("Decomposition of", repr(self))
+        print("Decomposition of", repr(self)) if self.debug else None
         general = self.general
         if self.half:
             r_h = (general[0]/abs(general[0]))*0.5
@@ -319,7 +320,7 @@ class HurwitzQuaternion:
         i = general[1] - i_h
         j = general[2] - j_h
         k = general[3] - k_h
-        print("General whole quat:", r, i, j, k)
+        print("General whole quat:", r, i, j, k) if self.debug else None
         # return n unitary quaternion for each value in self
         real = [HurwitzQuaternion(int(r/abs(r)), 0, 0, 0) for _ in range(int(abs(r)))]
         imag = [HurwitzQuaternion(0, int(i/abs(i)), 0, 0) for _ in range(int(abs(i)))]
@@ -331,8 +332,65 @@ class HurwitzQuaternion:
             return whole_part
         else:
             half_unit = HurwitzQuaternion(int(r_h*2), int(i_h*2), int(j_h*2), int(k_h*2), True)
-            print("Half part unit quat:", repr(half_unit))
+            print("Half part unit quat:", repr(half_unit)) if self.debug else None
             return whole_part + [half_unit]
+
+    def decompose_binomial(self) -> tuple:
+        decomposition = self.decompose()
+        half = decomposition[-1] if decomposition[-1].half == True else False
+        whole = HurwitzQuaternion(0, 0, 0, 0)
+        if half != False:
+            decomposition = decomposition[:-1]
+            # sum all the whole quaternions
+            for quat in decomposition:
+                whole += quat
+            return (whole, half)
+        else:
+            # sum all the whole quaternions
+            for quat in decomposition:
+                whole += quat
+            return (whole, None)
+        
+    def __pow__(self, power: int) -> 'HurwitzQuaternion':
+        if not isinstance(power, int):
+            raise TypeError("Can only raise HurwitzQuaternion to an integer power, will implement fractional powers and quaternion powers later")
+        if power == 0:
+            return HurwitzQuaternion(1, 0, 0, 0, False)  # Always use whole quaternion for identity
+        if power == 1:
+            return self
+        if power < 0:
+            return (self.inverse() ** abs(power))  # Handle negative powers using the inverse
+
+        result = HurwitzQuaternion(1, 0, 0, 0, False)  # Start with the identity quaternion as a whole quaternion
+        base = self
+        print("Starting power calculation, base:", repr(base), "power:", power) if self.debug else None
+        # decompose into binomial form
+        whole, half = base.decompose_binomial()
+        print("Decomposed into whole:", repr(whole), "half:", repr(half)) if self.debug else None
+        # calculate whole * whole, whole * half, half * whole, half * half
+        
+        if power >= 2:
+            for _ in range(power):
+                print("result before:", repr(result)) if self.debug else None
+                result = result.binomial_multiplication(base)
+                print("result after:", repr(result)) if self.debug else None
+
+        return result
+
+    def binomial_multiplication(self, other: 'HurwitzQuaternion') -> 'HurwitzQuaternion':
+        whole, half = self.decompose_binomial()
+        whole_other, half_other = other.decompose_binomial()
+        whole_whole = whole * whole_other if whole != None and whole_other != None else HurwitzQuaternion(0, 0, 0, 0, False)
+        whole_half = whole * half_other if whole != None and half_other != None else HurwitzQuaternion(0, 0, 0, 0, False)
+        half_whole = half * whole_other if half != None and whole_other != None else HurwitzQuaternion(0, 0, 0, 0, False)
+        half_half = half * half_other if half != None and half_other != None else HurwitzQuaternion(0, 0, 0, 0, False)
+        print("Whole Whole:", repr(whole_whole)) if self.debug else None
+        print("Whole Half:", repr(whole_half)) if self.debug else None
+        print("Half Whole:", repr(half_whole)) if self.debug else None
+        print("Half Half:", repr(half_half)) if self.debug else None
+        result = whole_whole + whole_half + half_whole + half_half
+        print("result:", result) if self.debug else None
+        return result
 
     def imaginary_string(self) -> str:
         stringReps = []
@@ -355,10 +413,10 @@ class HurwitzQuaternion:
             return None
 
         symbols = [
-            unit_symbol(self.a, "1", "-1"),
-            unit_symbol(self.b, "i", "-i"),
-            unit_symbol(self.c, "j", "-j"),
-            unit_symbol(self.d, "k", "-k")
+            unit_symbol(self.a, "(1)", "(1)"),
+            unit_symbol(self.b, "(i)", "(i)"),
+            unit_symbol(self.c, "(j)", "(j)"),
+            unit_symbol(self.d, "(k)", "(k)")
         ]
 
         for symbol in symbols:
@@ -426,8 +484,8 @@ class HurwitzQuaternion:
         """
         if q1.norm() == q2.norm():
             q1_associates = q1.associates()
-            print(q1_associates)
-            print(q2.general)
+            print(q1_associates) if self.debug else None
+            print(q2.general) if self.debug else None
             if q2 in q1_associates:
                 return True
         return False
