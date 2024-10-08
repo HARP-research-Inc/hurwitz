@@ -3,6 +3,7 @@ README.md
 setup.py
 hurwitz/__init__.py
 hurwitz/hurwitz.py
+hurwitz/hurwitz_binomial.py
 hurwitz.egg-info/PKG-INFO
 hurwitz.egg-info/SOURCES.txt
 hurwitz.egg-info/dependency_links.txt
