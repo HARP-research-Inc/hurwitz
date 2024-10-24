@@ -36,7 +36,17 @@ q_half = HurwitzQuaternion(1, 3, 5, 7, half=True)
 ```
 
 > [!IMPORTANT]
-> Half-Integer quaternions *cannot* accept zeroes nor even values as coefficients. Those would lead to a *non-Hurwitz quaternion*. If you want to get to the 'closest' quaternion, use the `snap` method below.
+> Half-Integer quaternions *cannot* accept zeroes or even values as coefficients. Doing so will lead to a *non-Hurwitz quaternion*. If you want to find the 'closest' quaternion, use the `snap` method described below.
+>
+> By default, experimental mode is set to *off* for any quaternion, as defined by `self.experimental = False` in the constructor. This disables the following functions:
+>
+> - `euclidean_division_pro_max()`
+> - `snap()`
+> - `pow()`
+> - `binomial_multiplication()`
+> - `associates()`
+> - `equivalence_class()`
+> - `association_check()`
 
 ## Basic Operations
 
