@@ -37,6 +37,7 @@ class HurwitzQuaternion:
         self.half = half
         self.trace = 2*a if self.half == False else a
         self.general = (a, b, c, d) if self.half == False else (a/2, b/2, c/2, d/2)
+        self.experimental = False
 
     def __add__(self, other: 'HurwitzQuaternion') -> 'HurwitzQuaternion':
         if not isinstance(other, HurwitzQuaternion):
@@ -59,29 +60,55 @@ class HurwitzQuaternion:
 
     def __mul__(self, other) -> 'HurwitzQuaternion':
         if isinstance(other, HurwitzQuaternion):
-            if self.half == other.half:
+            a1, b1, c1, d1, half1 = self.a, self.b, self.c, self.d, self.half
+            a2, b2, c2, d2, half2 = other.a, other.b, other.c, other.d, other.half
+
+            if (half1 == True and half2 == True):
+                if half1 == True:
+                    a1/=2
+                    b1/=2
+                    c1/=2
+                    d1/=2
+                if half2 == True:
+                    a2/=2
+                    b2/=2
+                    c2/=2
+                    d2/=2
                 return HurwitzQuaternion(
-                    self.a * other.a - self.b * other.b - self.c * other.c - self.d * other.d,
-                    self.a * other.b + self.b * other.a + self.c * other.d - self.d * other.c,
-                    self.a * other.c - self.b * other.d + self.c * other.a + self.d * other.b,
-                    self.a * other.d + self.b * other.c - self.c * other.b + self.d * other.a,
-                    self.half
+                    int(2*(a1 * a2 - b1 * b2 - c1 * c2 - d1 * d2)),
+                    int(2*(a1 * b2 + b1 * a2 + c1 * d2 - d1 * c2)),
+                    int(2*(a1 * c2 - b1 * d2 + c1 * a2 + d1 * b2)),
+                    int(2*(a1 * d2 + b1 * c2 - c1 * b2 + d1 * a2)),
+                    True
                 )
-            else:
-                # If one is half and the other is not, convert half to whole for the operation
-                if self.half:
-                    factor = 2
-                else:
-                    factor = 1
-                results = [
-                    factor * (self.a * other.a - self.b * other.b - self.c * other.c - self.d * other.d),
-                    factor * (self.a * other.b + self.b * other.a + self.c * other.d - self.d * other.c),
-                    factor * (self.a * other.c - self.b * other.d + self.c * other.a + self.d * other.b),
-                    factor * (self.a * other.d + self.b * other.c - self.c * other.b + self.d * other.a)]
-                if results[0] % 2 == 0 and results[1] % 2 == 0 and results[2] % 2 == 0 and results[3] % 2 == 0:
-                    return HurwitzQuaternion(results[0] // 2, results[1] // 2, results[2] // 2, results[3] // 2, False)
-                else:
-                    return HurwitzQuaternion(results[0], results[1], results[2], results[3], True)
+            elif(half1 == half2):
+                return HurwitzQuaternion(
+                    int((a1 * a2 - b1 * b2 - c1 * c2 - d1 * d2)),
+                    int((a1 * b2 + b1 * a2 + c1 * d2 - d1 * c2)),
+                    int((a1 * c2 - b1 * d2 + c1 * a2 + d1 * b2)),
+                    int((a1 * d2 + b1 * c2 - c1 * b2 + d1 * a2)),
+                    False
+                )
+            else: # One if half and other is whole
+                if half1 == True:
+                    a2*=2
+                    b2*=2
+                    c2*=2
+                    d2*=2
+                if half2 == True:
+                    a1*=2
+                    b1*=2
+                    c1*=2
+                    d1*=2
+                print(str(a1) + ", " + str(a2))
+                return HurwitzQuaternion(
+                    int((a1 * a2 - b1 * b2 - c1 * c2 - d1 * d2)/4),
+                    int((a1 * b2 + b1 * a2 + c1 * d2 - d1 * c2)/4),
+                    int((a1 * c2 - b1 * d2 + c1 * a2 + d1 * b2)/4),
+                    int((a1 * d2 + b1 * c2 - c1 * b2 + d1 * a2)/4),
+                    False
+                )
+
         elif isinstance(other, int):
             if (other % 2 == 0) and self.half == True:
                 return HurwitzQuaternion(
@@ -89,14 +116,22 @@ class HurwitzQuaternion:
                     int(self.b * other // 2),
                     int(self.c * other // 2),
                     int(self.d * other // 2),
-                    False
+                    True
                 )
-            else:
+            elif(self.half == False):
                 return HurwitzQuaternion(
                     int(self.a * other),
                     int(self.b * other),
                     int(self.c * other),
                     int(self.d * other),
+                    False
+                )
+            else:
+                return HurwitzQuaternion(
+                    int(self.a * other // 2),
+                    int(self.b * other // 2),
+                    int(self.c * other // 2),
+                    int(self.d * other // 2),
                     self.half
                 )
         else:
@@ -162,22 +197,34 @@ class HurwitzQuaternion:
     def invertable(self) -> bool:
         # Q is invertible if ∃q ∈ A such that qq' = q'q, and that qq' ∈ A. this only is true if the HQ is unitary
         return self.unitary()
+    
+    """
+    FIX UNITARY DEFINITION:
+    """
         
     def inverse(self) -> 'HurwitzQuaternion':
         # Define a dictionary mapping each unitary quaternion to its inverse
         unitary_inverses = {
-            (1, 0, 0, 0): (1, 0, 0, 0), (-1, 0, 0, 0): (-1, 0, 0, 0), (0, 1, 0, 0): (0, -1, 0, 0),
-            (0, -1, 0, 0): (0, 1, 0, 0), (0, 0, 1, 0): (0, 0, -1, 0), (0, 0, -1, 0): (0, 0, 1, 0),
-            (0, 0, 0, 1): (0, 0, 0, -1), (0, 0, 0, -1): (0, 0, 0, 1), (1, 1, 1, 1): (1, -1, -1, -1),
-            (-1, -1, -1, -1): (-1, 1, 1, 1), (1, -1, 1, -1): (1, 1, -1, 1), (-1, 1, -1, 1): (-1, -1, 1, -1),
-            (1, 1, -1, -1): (1, -1, 1, 1), (-1, -1, 1, 1): (-1, 1, -1, -1), (1, -1, -1, 1): (1, 1, 1, -1),
-            (-1, 1, 1, -1): (-1, -1, -1, 1), (1, 1, 1, -1): (1, -1, -1, 1), (-1, -1, -1, 1): (-1, 1, 1, -1),
-            (1, 1, -1, 1): (1, -1, 1, -1), (-1, -1, 1, -1): (-1, 1, -1, 1), (1, -1, 1, 1): (1, 1, -1, -1),
-            (-1, 1, -1, -1): (-1, -1, 1, 1), (1, -1, -1, -1): (1, 1, 1, 1), (-1, 1, 1, 1): (-1, -1, -1, -1)
-        }
+            (1, 0, 0, 0, False): (1, 0, 0, 0, False),
+            (-1, 0, 0, 0, False): (-1, 0, 0, 0, False),
+            (0, 1, 0, 0, False): (0, -1, 0, 0, False),
+            (0, -1, 0, 0, False): (0, 1, 0, 0, False),
+            (0, 0, 1, 0, False): (0, 0, -1, 0, False),
+            (0, 0, -1, 0, False): (0, 0, 1, 0, False),
+            (0, 0, 0, 1, False): (0, 0, 0, -1, False),
+            (0, 0, 0, -1, False): (0, 0, 0, 1, False),
 
+            (1, 1, 1, 1, True): (1, -1, -1, -1, True),
+            (1, 1, 1, -1, True): (1, -1, -1, 1, True),
+            (1, 1, -1, 1, True): (1, -1, 1, -1, True),
+            (1, 1, -1, -1, True): (1, -1, 1, 1, True),
+            (1, -1, 1, 1, True): (1, 1, -1, -1, True),
+            (1, -1, 1, -1, True): (1, 1, -1, 1, True),
+            (1, -1, -1, 1, True): (1, 1, 1, -1, True),
+            (1, -1, -1, -1, True): (1, 1, 1, 1, True),
+        }
         # Get the quaternion tuple
-        quaternion = (self.a, self.b, self.c, self.d)
+        quaternion = (self.a, self.b, self.c, self.d, self.half)
 
         # Return the inverse if the quaternion is unitary, otherwise raise an exception
         if quaternion in unitary_inverses:
@@ -264,6 +311,9 @@ class HurwitzQuaternion:
         return (HurwitzQuaternion(*q_preprocess, True), HurwitzQuaternion(*r_preprocess, True))
 
     def euclidean_division_pro_max(self, other: 'HurwitzQuaternion') -> ('HurwitzQuaternion', 'HurwitzQuaternion'):
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
+
         # like regular euclidean division, but also tries to divide the conjuigate of the dividend by the divisor
         # and returns the result with the smallest remainder
         forward = self.euclidean_division(other)
@@ -279,6 +329,9 @@ class HurwitzQuaternion:
             return forward
 
     def snap(self, general_quaternion: tuple) -> 'HurwitzQuaternion':
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
+        
         # Round the values of the general quaternion to the nearest integer or half
         g_norm = self.general_norm(general_quaternion)
 
@@ -352,6 +405,8 @@ class HurwitzQuaternion:
             return (whole, None)
         
     def __pow__(self, power: int) -> 'HurwitzQuaternion':
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
         if not isinstance(power, int):
             raise TypeError("Can only raise HurwitzQuaternion to an integer power, will implement fractional powers and quaternion powers later")
         if power == 0:
@@ -378,6 +433,8 @@ class HurwitzQuaternion:
         return result
 
     def binomial_multiplication(self, other: 'HurwitzQuaternion') -> 'HurwitzQuaternion':
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
         whole, half = self.decompose_binomial()
         whole_other, half_other = other.decompose_binomial()
         whole_whole = whole * whole_other if whole != None and whole_other != None else HurwitzQuaternion(0, 0, 0, 0, False)
@@ -465,6 +522,8 @@ class HurwitzQuaternion:
         return f"{self.a} + {self.b}i + {self.c}j + {self.d}ij"
 
     def associates(self):
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
         # get all associates of the quaternion
         associates = [] 
         # multiply by all unitary quaternions
@@ -475,10 +534,14 @@ class HurwitzQuaternion:
         return associates
 
     def equivalence_class(self):
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
         # get the equivalence class of the quaternion
         return self.conjugate().associates() + self.associates()
 
     def association_check(self, q1, q2) -> bool:
+        if not self.experimental:
+            raise Exception("This function is disabled because experimental mode is off.")
         """
         Check if two quaternions are associates.
         """
