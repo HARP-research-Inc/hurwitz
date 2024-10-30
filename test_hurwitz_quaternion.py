@@ -4,6 +4,21 @@ import pytest
 
 class TestExpectedResults:
 
+    h = HurwitzQuaternion(1,-1,-1,1,True)
+    w = HurwitzQuaternion(1,0,0,0,False)
+    p = h*w
+    print(p)
+
+    h = HurwitzQuaternion(1,-1,-1,1,True)
+    w = HurwitzQuaternion(0,0,0,1,False)
+    p = h*w
+    print(p)
+
+    q1 = HurwitzQuaternion(1, -1, -1, 1, half=True)
+    q2 = HurwitzQuaternion(1, 2, 0, 0, half=False)
+    q_product = q1 * q2
+    print(q_product)
+
     def test_creation(self):
        
         q1 = HurwitzQuaternion(1, 2, 3, 4)
@@ -375,7 +390,6 @@ class TestExpectedResults:
         q3 = HurwitzQuaternion(1, 1, 1, 1, half=True)
         q4 = HurwitzQuaternion(1, 1, 1, 1, half=True)
         q_product = q3 * q4 
-        print(str(q_product.half))
         assert (q_product.a, q_product.b, q_product.c, q_product.d, q_product.half) == (-1, 1, 1, 1, True)
         
 

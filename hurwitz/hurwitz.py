@@ -100,13 +100,23 @@ class HurwitzQuaternion:
                     b1*=2
                     c1*=2
                     d1*=2
-                print(str(a1) + ", " + str(a2))
+                r = (a1 * a2 - b1 * b2 - c1 * c2 - d1 * d2)/4
+                i = (a1 * b2 + b1 * a2 + c1 * d2 - d1 * c2)/4
+                j = (a1 * c2 - b1 * d2 + c1 * a2 + d1 * b2)/4
+                k = (a1 * d2 + b1 * c2 - c1 * b2 + d1 * a2)/4
+                is_half = False
+                if(not r.is_integer() and not i.is_integer() and not j.is_integer() and not k.is_integer()):
+                    r*=2
+                    i*=2
+                    j*=2
+                    k*=2
+                    is_half = True
                 return HurwitzQuaternion(
-                    int((a1 * a2 - b1 * b2 - c1 * c2 - d1 * d2)/4),
-                    int((a1 * b2 + b1 * a2 + c1 * d2 - d1 * c2)/4),
-                    int((a1 * c2 - b1 * d2 + c1 * a2 + d1 * b2)/4),
-                    int((a1 * d2 + b1 * c2 - c1 * b2 + d1 * a2)/4),
-                    False
+                    int(r),
+                    int(i),
+                    int(j),
+                    int(k),
+                    is_half
                 )
 
         elif isinstance(other, int):
@@ -462,7 +472,7 @@ class HurwitzQuaternion:
             if val == 1:
                 return extra + symbol
             if val == -1:
-                return extra + symbol_alt
+                return f"{val}{suffix}{symbol}"
             if val > 0:
                 return f"{val}{suffix}{symbol}"
             if val < 0 and symbol_alt:
